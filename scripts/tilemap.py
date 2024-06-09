@@ -34,16 +34,30 @@ class TileMap:
         self.tilemap = {}
         self.offgrid_tiles = []
 
-        # remove below at a later date
-        # self.example()
+    def extract(self, id_pairs, keep=False):
+        """id_pairs is a list tuples with info on type and variant, such as [("grass", 2), ("stone", 3)]"""
+        matches = []
+
+        for tile in self.offgrid_tiles.copy():
+            if (tile["type"], tile["variant"]) in id_pairs:
+                matches.append(tile.copy())
+                if not keep:
+                    self.offgrid_tiles.remove(tile)
+
+        for loc in self.tilemap:
+            tile = self.tilemap[loc]
+            if (tile["type"], tile["variant"]) in id_pairs:
+                matches.append(tile.copy())
+                matches[-1]["pos"] = matches[-1]["pos"].copy()
+                matches[-1]["pos"][0] *= self.tile_size
+                matches[-1]["pos"][1] *= self.tile_size
+                if not keep:
+                    del self.tilemap[loc]
+
+        return matches
 
     def tile(self, index, type, variant, pos):
         self.tilemap[index] = {"type": type, "variant": variant, "pos": pos}
-
-    # def example(self):
-    #     for i in range(10):
-    #         self.tile(str(3 + i) + ";10", "grass", 1, (3 + i, 10))
-    #         self.tile("10;" + str(5 + i), "stone", 1, (10, 5 + i))
 
     def tiles_around(self, pos):
         tiles = []
