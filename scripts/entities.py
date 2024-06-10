@@ -94,6 +94,9 @@ class Player(PhysicsEntity):
 
         if self.air_time > 4:
             self.set_action("jump")
+            if self.collisions["left"] or self.collisions["right"]:
+                self.set_action("wall_slide")
+                self.velocity[1] = min(0.5, self.velocity[1])
             if self.jump_count == 2:
                 self.jump_count = 1
         elif movement[0] != 0:
@@ -104,5 +107,8 @@ class Player(PhysicsEntity):
     def jump(self):
         if self.jump_count > 0:
             self.jump_count -= 1
-            self.set_action("jump")
-            self.velocity[1] = -3
+            if self.collisions["left"] or self.collisions["right"]:
+                # need to add in the logic for bouncing off a wall
+            else:
+                self.set_action("jump")
+                self.velocity[1] = -3
