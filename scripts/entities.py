@@ -84,6 +84,7 @@ class Player(PhysicsEntity):
         super().__init__(game, "player", pos, size)
         self.air_time = 0
         self.jump_count = 2
+        self.wall_slide = False
 
     def update(self, tilemap, movement=(0, 0)):
         super().update(tilemap, movement=movement)
@@ -94,24 +95,43 @@ class Player(PhysicsEntity):
             self.jump_count = 2
             self.velocity[0] = 0
 
-        if self.air_time > 4:
-            self.set_action("jump")
-            if self.collisions["left"] or self.collisions["right"]:
-                self.set_action("wall_slide")
-                self.velocity[1] = min(0.5, self.velocity[1])
-            if self.jump_count == 2:
-                self.jump_count = 1
-        elif movement[0] != 0:
-            self.set_action("run")
+        if self.wall_slide is False:
+            self.velocity[0] = 0
+            if self.air_time > 4:
+                self.set_action("jump")
+                if self.collisions["left"]:
+                    self.wall_slide = True
+                    self.velocity[0] = -1
+                if self.collisions["right"]:
+                    self.wall_slide = True
+                    self.velocity[0] = 1
+                if self.jump_count == 2:
+                    self.jump_count = 1
+            elif movement[0] != 0:
+                self.set_action("run")
+            else:
+                self.set_action("idle")
         else:
-            self.set_action("idle")
+            self.set_action("wall_slide")
+            self.velocity[1] = min(0.5, self.velocity[1])
+            if self.collisions["down"] or not (
+                self.collisions["left"] or self.collisions["right"]
+            ):
+                self.wall_slide = False
 
     def jump(self):
-        if self.collisions["left"] and self.air_time > 4:
-            self.velocity = [2, -3]
-        elif self.collisions["right"] and self.air_time > 4:
-            self.velocity = [-2, -3]
-        elif self.jump_count > 0:
-            self.jump_count -= 1
+        # try a wall slde timer for this ...
+        # if self.collisions["left"] and self.air_time > 4:
+        #     self.velocity = [2, -3]
+        # elif self.collisions["right"] and self.air_time > 4:
+        #     self.velocity = [-2, -3]
+
+        if not self.wall_slide:
+            if self.jump_count > 0:
+                self.jump_count -= 1
+                self.velocity[1] = -3
+                self.set_action("jump")
+        else:
             self.velocity[1] = -3
             self.set_action("jump")
+            self.wall_slide = False
