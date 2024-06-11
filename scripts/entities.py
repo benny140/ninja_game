@@ -25,6 +25,7 @@ class PhysicsEntity:
 
     def update(self, tilemap, movement=(0, 0)):
         self.collisions = {"up": False, "down": False, "right": False, "left": False}
+
         frame_movement = (
             movement[0] + self.velocity[0],
             movement[1] + self.velocity[1],
@@ -91,6 +92,7 @@ class Player(PhysicsEntity):
         if self.collisions["down"]:
             self.air_time = 0
             self.jump_count = 2
+            self.velocity[0] = 0
 
         if self.air_time > 4:
             self.set_action("jump")
@@ -105,10 +107,11 @@ class Player(PhysicsEntity):
             self.set_action("idle")
 
     def jump(self):
-        if self.jump_count > 0:
+        if self.collisions["left"] and self.air_time > 4:
+            self.velocity = [2, -3]
+        elif self.collisions["right"] and self.air_time > 4:
+            self.velocity = [-2, -3]
+        elif self.jump_count > 0:
             self.jump_count -= 1
-            if self.collisions["left"] or self.collisions["right"]:
-                # need to add in the logic for bouncing off a wall
-            else:
-                self.set_action("jump")
-                self.velocity[1] = -3
+            self.velocity[1] = -3
+            self.set_action("jump")
