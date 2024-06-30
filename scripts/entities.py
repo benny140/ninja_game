@@ -1,4 +1,5 @@
 import pygame
+from scripts.particle import Particle
 
 
 class PhysicsEntity:
@@ -128,6 +129,14 @@ class Player(PhysicsEntity):
             self.velocity[0] = abs(self.dashing) / self.dashing * 8
             if abs(self.dashing) == 51:
                 self.velocity[0] *= 0.1
+
+            particle_pos = self.pos.copy()
+            particle_pos[1] += self.size[1] / 2
+            print(self.pos)
+            print(self.size)
+            self.game.particles.append(
+                Particle(self.game, "particle", particle_pos, velocity=[0, 0], frame=0)
+            )
 
         if self.velocity[0] > 0:
             self.velocity[0] = max(self.velocity[0] - 0.1, 0)
