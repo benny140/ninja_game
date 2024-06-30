@@ -85,6 +85,7 @@ class Player(PhysicsEntity):
         self.air_time = 0
         self.jump_count = 2
         self.wall_slide = False
+        self.dashing = 0
 
     def update(self, tilemap, movement=(0, 0)):
         super().update(tilemap, movement=movement)
@@ -119,6 +120,20 @@ class Player(PhysicsEntity):
             ):
                 self.wall_slide = False
 
+        if self.dashing > 0:
+            self.dashing = max(self.dashing - 1, 0)
+        if self.dashing < 0:
+            self.dashing = min(self.dashing + 1, 0)
+        if abs(self.dashing) > 50:
+            self.velocity[0] = abs(self.dashing) / self.dashing * 8
+            if abs(self.dashing) == 51:
+                self.velocity[0] *= 0.1
+
+        if self.velocity[0] > 0:
+            self.velocity[0] = max(self.velocity[0] - 0.1, 0)
+        else:
+            self.velocity[0] = min(self.velocity[0] + 0.1, 0)
+
     def jump(self):
         # try a wall slde timer for this ...
         # if self.collisions["left"] and self.air_time > 4:
@@ -135,3 +150,14 @@ class Player(PhysicsEntity):
             self.velocity[1] = -3
             self.set_action("jump")
             self.wall_slide = False
+
+    def dash(self):
+        if not self.dashing:
+            if self.flip:
+                self.dashing = -60
+            else:
+                self.dashing = 60
+
+    def render(self, surf, offset=(0, 0)):
+        if abs(self.dashing) <= 50:
+            super().render(surf, offset=offset)
