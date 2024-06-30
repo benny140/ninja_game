@@ -127,9 +127,9 @@ class Player(PhysicsEntity):
             self.dashing = max(self.dashing - 1, 0)
         if self.dashing < 0:
             self.dashing = min(self.dashing + 1, 0)
-        if abs(self.dashing) > 50:
+        if abs(self.dashing) > 20:
             self.velocity[0] = abs(self.dashing) / self.dashing * 8
-            if abs(self.dashing) == 51:
+            if abs(self.dashing) == 21:
                 self.velocity[0] *= 0.1
 
             # particle effects
@@ -171,10 +171,10 @@ class Player(PhysicsEntity):
     def dash(self):
         if not self.dashing:
             if self.flip:
-                self.dashing = -60
+                self.dashing = -30
             else:
-                self.dashing = 60
+                self.dashing = 30
 
     def render(self, surf, offset=(0, 0)):
-        if abs(self.dashing) <= 50:
+        if abs(self.dashing) <= 20:
             super().render(surf, offset=offset)
