@@ -1,5 +1,7 @@
 import pygame
 from scripts.particle import Particle
+import math
+import random
 
 
 class PhysicsEntity:
@@ -130,12 +132,18 @@ class Player(PhysicsEntity):
             if abs(self.dashing) == 51:
                 self.velocity[0] *= 0.1
 
-            particle_pos = self.pos.copy()
-            particle_pos[1] += self.size[1] / 2
-            print(self.pos)
-            print(self.size)
+            # particle effects
+            angle = 2 * math.pi * random.random()
+            speed = 0.5 * random.random() + 0.5
+            pvelocity = [math.cos(angle) * speed, math.sin(angle) * speed]
             self.game.particles.append(
-                Particle(self.game, "particle", particle_pos, velocity=[0, 0], frame=0)
+                Particle(
+                    self.game,
+                    "particle",
+                    self.rect().center,
+                    velocity=pvelocity,
+                    frame=random.randint(0, 7),
+                )
             )
 
         if self.velocity[0] > 0:
