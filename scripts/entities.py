@@ -25,6 +25,7 @@ class PhysicsEntity:
 
     def update(self, tilemap, movement=(0, 0)):
         self.collisions = {"up": False, "down": False, "right": False, "left": False}
+
         frame_movement = (
             movement[0] + self.velocity[0],
             movement[1] + self.velocity[1],
@@ -82,6 +83,9 @@ class Player(PhysicsEntity):
     def __init__(self, game, pos, size):
         super().__init__(game, "player", pos, size)
         self.air_time = 0
+        self.jump_count = 2
+        self.wall_slide = False
+        self.dashing = 0
 
     def update(self, tilemap, movement=(0, 0)):
         super().update(tilemap, movement=movement)
@@ -89,10 +93,71 @@ class Player(PhysicsEntity):
 
         if self.collisions["down"]:
             self.air_time = 0
+            self.jump_count = 2
+            self.velocity[0] = 0
 
-        if self.air_time > 4:
-            self.set_action("jump")
-        elif movement[0] != 0:
-            self.set_action("run")
+        if self.wall_slide is False:
+            self.velocity[0] = 0
+            if self.air_time > 4:
+                self.set_action("jump")
+                if self.collisions["left"]:
+                    self.wall_slide = True
+                    self.velocity[0] = -1
+                if self.collisions["right"]:
+                    self.wall_slide = True
+                    self.velocity[0] = 1
+                if self.jump_count == 2:
+                    self.jump_count = 1
+            elif movement[0] != 0:
+                self.set_action("run")
+            else:
+                self.set_action("idle")
         else:
-            self.set_action("idle")
+            self.set_action("wall_slide")
+            self.velocity[1] = min(0.5, self.velocity[1])
+            if self.collisions["down"] or not (
+                self.collisions["left"] or self.collisions["right"]
+            ):
+                self.wall_slide = False
+
+        if self.dashing > 0:
+            self.dashing = max(self.dashing - 1, 0)
+        if self.dashing < 0:
+            self.dashing = min(self.dashing + 1, 0)
+        if abs(self.dashing) > 50:
+            self.velocity[0] = abs(self.dashing) / self.dashing * 8
+            if abs(self.dashing) == 51:
+                self.velocity[0] *= 0.1
+
+        if self.velocity[0] > 0:
+            self.velocity[0] = max(self.velocity[0] - 0.1, 0)
+        else:
+            self.velocity[0] = min(self.velocity[0] + 0.1, 0)
+
+    def jump(self):
+        # try a wall slde timer for this ...
+        # if self.collisions["left"] and self.air_time > 4:
+        #     self.velocity = [2, -3]
+        # elif self.collisions["right"] and self.air_time > 4:
+        #     self.velocity = [-2, -3]
+
+        if not self.wall_slide:
+            if self.jump_count > 0:
+                self.jump_count -= 1
+                self.velocity[1] = -3
+                self.set_action("jump")
+        else:
+            self.velocity[1] = -3
+            self.set_action("jump")
+            self.wall_slide = False
+
+    def dash(self):
+        if not self.dashing:
+            if self.flip:
+                self.dashing = -60
+            else:
+                self.dashing = 60
+
+    def render(self, surf, offset=(0, 0)):
+        if abs(self.dashing) <= 50:
+            super().render(surf, offset=offset)
