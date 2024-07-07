@@ -82,6 +82,35 @@ class PhysicsEntity:
         # surf.blit(self.game.assets[self.e_type], (self.pos[0] - offset[0], self.pos[1] - offset[1]))
 
 
+class Enemy(PhysicsEntity):
+    def __init__(self, game, pos, size):
+        super().__init__(game, "enemy", pos, size)
+        self.walking = 0
+
+    def update(self, tilemap, movement=(0, 0)):
+        if self.walking != 0:
+            self.set_action("run")
+            rect = self.rect()
+            pos_check = (rect.centerx + (-7 if self.flip else 7), rect.centery + 23)
+            if tilemap.solid_check(pos_check):
+                if self.collisions["left"] or self.collisions["right"]:
+                    self.flip = not self.flip
+                movement = (movement[0] - 0.5 if self.flip else 0.5, movement[1])
+                self.walking = max(0, self.walking - 1)
+            else:
+                movement = (0, 0)
+                self.walking = 0
+                self.flip = not self.flip
+        else:
+            self.set_action("idle")
+            if random.random() < 0.01:
+                self.walking = random.randint(30, 120)
+        super().update(tilemap, movement=movement)
+
+    def render(self, surf, offset=(0, 0)):
+        super().render(surf, offset=offset)
+
+
 class Player(PhysicsEntity):
     def __init__(self, game, pos, size):
         super().__init__(game, "player", pos, size)

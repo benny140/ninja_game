@@ -44,7 +44,7 @@ class TileMap:
                 if not keep:
                     self.offgrid_tiles.remove(tile)
 
-        for loc in self.tilemap:
+        for loc in self.tilemap.copy():
             tile = self.tilemap[loc]
             if (tile["type"], tile["variant"]) in id_pairs:
                 matches.append(tile.copy())
@@ -146,3 +146,11 @@ class TileMap:
             neighbours = tuple(sorted(neighbours))
             if (tile["type"] in AUTOTILE_TYPES) and (neighbours in AUTOTILE_MAP):
                 tile["variant"] = AUTOTILE_MAP[neighbours]
+
+    def solid_check(self, pos):
+        tile_loc = (int(pos[0] // self.tile_size), int(pos[1] // self.tile_size))
+        check_loc = str(tile_loc[0]) + ";" + str(tile_loc[1])
+        if check_loc in self.tilemap:
+            if self.tilemap[check_loc]["type"] in PHYSICS_TILES:
+                return True
+        return False
