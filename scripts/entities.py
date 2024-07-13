@@ -101,6 +101,22 @@ class Enemy(PhysicsEntity):
                 movement = (0, 0)
                 self.walking = 0
                 self.flip = not self.flip
+
+            # this will force only a single frame to shoot
+            if self.walking == 0:
+                distance_to_player = (
+                    self.game.player.pos[0] - self.pos[0],
+                    self.game.player.pos[1] - self.pos[1],
+                )
+                if abs(distance_to_player[1]) < 16:
+                    if distance_to_player[0] < 0 and self.flip:
+                        self.game.projectiles.append(
+                            [[self.rect().centerx - 7, self.rect().centery], -1.5, 0]
+                        )
+                    if distance_to_player[0] > 0 and not self.flip:
+                        self.game.projectiles.append(
+                            [[self.rect().centerx + 7, self.rect().centery], 1.5, 0]
+                        )
         else:
             self.set_action("idle")
             if random.random() < 0.01:
